@@ -129,7 +129,7 @@ class BiLSTMTrain(object):
                 for i in np.arange(sequence_length_):
                     if y_[i] == 4:
                         sequence_label_count += 1
-                    if y_[i] == 4:
+                    if y_[i] == 1:
                         sequence_label_count += 1
                 viterbi_sequence_str = [str(i) for i in viterbi_sequence]
                 viterbi_sequence_str = ''.join(viterbi_sequence_str)
@@ -137,7 +137,9 @@ class BiLSTMTrain(object):
                 y_str = ''.join(y_str)
                 viterbi_sequence_str = viterbi_sequence_str.split('4')
                 y_str = y_str.split('4')
+                print(viterbi_sequence_str, y_str)
                 correct_count = max_sub_count(viterbi_sequence_str, y_str)
+                print(correct_count)
 
                 total_correct_count += correct_count
                 total_P_count += sequence_train_count
