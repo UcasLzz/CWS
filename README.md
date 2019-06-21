@@ -38,3 +38,10 @@ use dictionary generated, and you'll get P: 0.8781, R: 0.7762, F1: 0.8192:
 ```
 python3 test.py --dict dict.txt  # be sure to generate dictionary before
 ```
+
+## Suggetsed Readings
+Neural Architectures for Named Entity Recognition
+https://aclweb.org/anthology/N16-1030
+
+Bidirectional LSTM-CRF Models for Sequence Tagging
+https://arxiv.org/pdf/1508.01991v1.pdf
