@@ -7,7 +7,7 @@ import os
 
 import cws.BiLSTM as modelDef
 from cws.data import Data
-from tips import max_sub_count
+#from tips import max_sub_count
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
@@ -82,8 +82,8 @@ class BiLSTMTrain(object):
 
         # testing
         print('**TEST RESULT:')
-        test_acc = self.test_epoch(self.data_test, sess)
-        print('**Test %d, acc=%g' % (self.data_test.y.shape[0], test_acc))
+        P, R, F1 = self.test_epoch(self.data_test, sess)
+        print('**Test %d, Precision= %g ; Recall= %g ; F1= %g ' % (self.data_test.y.shape[0], P, R, F1))
         sess.close()
 
     def test_epoch(self, dataset=None, sess=None):
@@ -99,7 +99,7 @@ class BiLSTMTrain(object):
         total_R_count = 0
         fetches = [self.model.scores, self.model.length, self.model.transition_params]
 
-        for i in range(batch_num):
+        for k in range(batch_num):
             X_batch, y_batch = dataset.next_batch(_batch_size)
             feed_dict = {self.model.X_inputs: X_batch, self.model.y_inputs: y_batch, self.model.lr: 1e-5,
                          self.model.batch_size: _batch_size,
@@ -116,17 +116,18 @@ class BiLSTMTrain(object):
                 y_ = y_[:sequence_length_]
                 viterbi_sequence, _ = crf.viterbi_decode(
                     tf_unary_scores_, transition_params)
+                y_ = y_.tolist()
 
                 sequence_train_count = 0
                 sequence_label_count = 0
 
-                for i in np.arange(sequence_length_):
+                for i in range(sequence_length_):
                     if viterbi_sequence[i] == 4:
                         sequence_train_count += 1
                     if viterbi_sequence[i] == 1:
                         sequence_train_count += 1
 
-                for i in np.arange(sequence_length_):
+                for i in range(sequence_length_):
                     if y_[i] == 4:
                         sequence_label_count += 1
                     if y_[i] == 1:
@@ -135,11 +136,27 @@ class BiLSTMTrain(object):
                 viterbi_sequence_str = ''.join(viterbi_sequence_str)
                 y_str = [str(i) for i in y_]
                 y_str = ''.join(y_str)
-                viterbi_sequence_str = viterbi_sequence_str.split('4')
-                y_str = y_str.split('4')
-                print(viterbi_sequence_str, y_str)
-                correct_count = max_sub_count(viterbi_sequence_str, y_str)
-                print(correct_count)
+
+                i = 0
+                correct_count = 0
+                while (i < sequence_length_ ):
+
+                    if y_str[i] == '4':
+                        if viterbi_sequence_str[i] == '4':
+                            correct_count += 1
+                            i += 1
+                        else:
+                            i += 1
+                    else:
+                        if y_str[i] == '1':
+                            start = i
+                            i += 1
+                            while(y_str[i] == '2'):
+                                i += 1
+                            end = i
+                            i += 1
+                            if y_str[start: end + 1] == viterbi_sequence_str[start: end + 1]:
+                                correct_count += 1
 
                 total_correct_count += correct_count
                 total_P_count += sequence_train_count
